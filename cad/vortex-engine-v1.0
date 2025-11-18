@@ -1,0 +1,279 @@
+// ===============================================
+// MOTOR DE VÓRTICE MVP v1.0 - SISTEMA COMPLETO MEJORADO
+// + Bobinas de resonancia + Sistema eléctrico + Mejoras
+// ===============================================
+
+// [Parámetros existentes se mantienen igual...]
+// PARÁMETROS EXISTENTES DEL ROTOR
+shaft_diameter   = 3.2;
+rotor_diameter   = 80;
+rotor_height     = 22;
+blade_thickness  = 2.2;
+num_blades       = 3;
+twist_degrees    = 48;
+
+// PARÁMETROS NUEVOS DEL SISTEMA
+cavity_height    = 120;
+cavity_major     = 50;
+cavity_minor     = 35;
+wall_thickness   = 3;
+inlet_diameter   = 16;
+outlet_diameter  = 10;
+
+// CÁLCULO ESPIRAL (existente)
+r0 = shaft_diameter/2 + 2;
+target_radius = rotor_diameter/2;
+growth_factor = ln(target_radius / r0) / 90;
+
+// ====================
+// 6. SISTEMA DE BOBINAS DE RESONANCIA
+// ====================
+resonance_coil_diameter = 70;
+coil_wire_thickness = 2;
+coil_turns = 36;
+coil_height = 40;
+
+module resonance_coil_assembly() {
+    // Base de la bobina
+    difference() {
+        cylinder(h = 8, r = resonance_coil_diameter/2 + 10, $fn=80);
+        
+        // Alojamiento para cavidad
+        translate([0, 0, -1])
+        cylinder(h = 10, r = resonance_coil_diameter/2 + 2, $fn=80);
+        
+        // Tornillos de fijación
+        for(i = [0:3]) {
+            rotate(i * 90)
+            translate([resonance_coil_diameter/2 + 5, 0, 0])
+            cylinder(h = 10, r = 1.5, center = true, $fn=20);
+        }
+    }
+    
+    // Bobina principal (simplificada para visualización)
+    for(i = [0:coil_turns-1]) {
+        angle = i * (360/coil_turns);
+        z_pos = (i / coil_turns) * coil_height - coil_height/2;
+        
+        rotate(angle)
+        translate([resonance_coil_diameter/2, 0, z_pos])
+        cylinder(h = coil_wire_thickness, r = coil_wire_thickness/2, $fn=20);
+    }
+    
+    // Terminales de conexión
+    translate([resonance_coil_diameter/2 + 15, 0, coil_height/2 - 5])
+    cylinder(h = 10, r = 3, $fn=20);
+    
+    translate([-resonance_coil_diameter/2 - 15, 0, coil_height/2 - 5])
+    cylinder(h = 10, r = 3, $fn=20);
+}
+
+// ====================
+// 7. GENERADOR ELÉCTRICO COMPACTO
+// ====================
+generator_diameter = 35;
+generator_height = 25;
+
+module compact_generator() {
+    // Carcasa del generador
+    difference() {
+        // Cuerpo principal
+        cylinder(h = generator_height, r = generator_diameter/2, $fn=60);
+        
+        // Ventilación
+        for(i = [0:5]) {
+            rotate(i * 60)
+            translate([generator_diameter/2 - 8, 0, 0])
+            cylinder(h = generator_height, r = 2, center = true, $fn=20);
+        }
+        
+        // Eje de salida
+        translate([0, 0, -1])
+        cylinder(h = generator_height + 2, r = shaft_diameter/2 + 0.5, $fn=30);
+    }
+    
+    // Imanes permanentes (visualización)
+    for(i = [0:7]) {
+        rotate(i * 45)
+        translate([generator_diameter/2 - 8, 0, 0])
+        color("red")
+        cylinder(h = generator_height - 5, r = 3, center = true, $fn=30);
+    }
+    
+    // Terminal eléctrico
+    translate([generator_diameter/2 + 5, 0, 0])
+    cube([10, 8, 4], center = true);
+}
+
+// ====================
+// 8. SISTEMA DE TUBERÍAS Y CONEXIONES
+// ====================
+module fluid_connectors() {
+    // Tubería de entrada
+    translate([cavity_major, 0, -cavity_height/4])
+    rotate([0, 90, 0])
+    difference() {
+        cylinder(h = 40, r = inlet_diameter/2 + 2, $fn=40);
+        cylinder(h = 42, r = inlet_diameter/2, center = true, $fn=40);
+    }
+    
+    // Tubería de salida a turbina
+    translate([0, 0, -cavity_height/2 - 25])
+    difference() {
+        cylinder(h = 30, r = outlet_diameter/2 + 2, $fn=40);
+        cylinder(h = 32, r = outlet_diameter/2, center = true, $fn=40);
+    }
+    
+    // Soporte de tubería
+    translate([cavity_major + 20, 0, -cavity_height/4])
+    rotate([0, 90, 0])
+    cylinder(h = 5, r = inlet_diameter/2 + 5, $fn=40);
+}
+
+// ====================
+// 9. CIRCUITO ELECTRÓNICO INTEGRADO
+// ====================
+module control_circuit() {
+    pcb_width = 40;
+    pcb_length = 60;
+    pcb_height = 2;
+    
+    // Placa PCB
+    color("green")
+    difference() {
+        // Placa base
+        cube([pcb_length, pcb_width, pcb_height], center = true);
+        
+        // Puntos de soldadura
+        for(x = [-20:10:20]) {
+            for(y = [-15:10:15]) {
+                translate([x, y, 0])
+                cylinder(h = pcb_height + 2, r = 1, center = true, $fn=20);
+            }
+        }
+    }
+    
+    // Componentes
+    // Timer 555
+    translate([-15, 10, pcb_height/2 + 1])
+    cube([8, 8, 4], center = true);
+    
+    // Condensador
+    translate([0, 10, pcb_height/2 + 3])
+    cylinder(h = 6, r = 3, center = true, $fn=30);
+    
+    // LED de estado
+    translate([15, 10, pcb_height/2 + 1])
+    cylinder(h = 3, r = 2, $fn=20);
+    
+    // Conectores
+    translate([-25, -15, pcb_height/2 + 2])
+    cube([15, 5, 4], center = true);
+}
+
+// ====================
+// 10. ENSAMBLAJE FINAL MEJORADO
+// ====================
+module vortex_motor_final_assembly() {
+    // Sistema base completo (existente)
+    vortex_motor_complete_assembly();
+    
+    // Bobinas de resonancia (superior e inferior)
+    translate([0, 0, cavity_height/2 - 15])
+    resonance_coil_assembly();
+    
+    translate([0, 0, -cavity_height/2 + 15])
+    rotate([0, 0, 45])
+    resonance_coil_assembly();
+    
+    // Generador eléctrico acoplado a turbina
+    translate([0, 0, -cavity_height/2 - 45])
+    compact_generator();
+    
+    // Sistema de tuberías
+    fluid_connectors();
+    
+    // Circuito de control montado lateralmente
+    translate([cavity_major + 50, 0, 0])
+    control_circuit();
+    
+    // Panel de montaje para componentes
+    translate([0, cavity_minor + 25, 0])
+    difference() {
+        cube([cavity_major * 2 + 20, 10, 5], center = true);
+        
+        // Ranuras para cables
+        for(x = [-30:15:30]) {
+            translate([x, 0, 0])
+            cube([8, 12, 6], center = true);
+        }
+    }
+}
+
+// ====================
+// 11. MODO IMPRESIÓN 3D (componentes separados)
+// ====================
+module print_ready_components() {
+    // Distribución para impresión
+    spacing = 90;
+    
+    // Rotor
+    translate([-spacing, spacing, 0])
+    vortex_rotor();
+    
+    // Turbina Pelton
+    translate([spacing, spacing, 0])
+    pelton_turbine();
+    
+    // Montaje del rotor
+    translate([-spacing, 0, 0])
+    rotor_mount();
+    
+    // Mitad superior de cavidad
+    translate([spacing, 0, 0])
+    difference() {
+        resonant_cavity(false);
+        translate([0, 0, -cavity_height/2])
+        cube([cavity_major*2, cavity_minor*2, cavity_height], center = true);
+    }
+    
+    // Mitad inferior de cavidad
+    translate([0, spacing, 0])
+    difference() {
+        resonant_cavity(false);
+        translate([0, 0, cavity_height/2])
+        cube([cavity_major*2, cavity_minor*2, cavity_height], center = true);
+    }
+    
+    // Base de bobina
+    translate([0, -spacing, 0])
+    resonance_coil_assembly();
+}
+
+// ====================
+// RENDERIZADO FINAL
+// ====================
+// Elige una opción:
+
+// 1. ENSAMBLAJE COMPLETO (visualización)
+vortex_motor_final_assembly();
+
+// 2. COMPONENTES PARA IMPRESIÓN 3D
+// print_ready_components();
+
+// 3. COMPONENTES INDIVIDUALES
+// vortex_rotor();
+// pelton_turbine();
+// resonant_cavity(false);
+// rotor_mount();
+// resonance_coil_assembly();
+// compact_generator();
+
+echo("=== SISTEMA COMPLETO - ESPECIFICACIONES ===");
+echo("Volumen de trabajo: ~", PI * cavity_major * cavity_minor * cavity_height / 1000, "ml");
+echo("Diámetro del vórtice: ", rotor_diameter, "mm");
+echo("Relación de aspecto cavidad: ", cavity_height/(cavity_major*2));
+echo("Número de bobinas: 2 (superior e inferior)");
+echo("Turbina Pelton: ", 12, "aspas");
+echo("Frecuencia resonancia estimada: 50-500 Hz");
+echo("Generador: Imanes permanentes x8");
