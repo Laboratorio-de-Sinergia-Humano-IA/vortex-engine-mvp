@@ -17,7 +17,8 @@ Este no es un informe de resultados. Es un **desafío de ingeniería.** Y te inv
 
 El diseño de este prototipo se basa en los principios físicos y la arquitectura teórica detallada en nuestro paper fundacional, que describe la física del Éter subyacente.
 
-*   **Leer el Paper Teórico en Zenodo:** [Enlace al DOI del Paper del "Ariete"]
+*   **Leer el Paper Teórico en Zenodo:** [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17444690.svg)](https://doi.org/10.5281/zenodo.17444690)
+
 
 ## Contenido del Repositorio
 
